@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Launch Course Progress</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            padding: 20px;
+        }
+        
+        .progress-container {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 450px;
+            width: 100%;
+        }
+        
+        .project-title {
+            font-size: 2.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #FFE4B5;
+        }
+        
+        .subtitle {
+            font-size: 1.1em;
+            margin-bottom: 40px;
+            opacity: 0.8;
+        }
+        
+        .percentage-display {
+            font-size: 4em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .progress-bar-container {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin: 30px 0;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            border-radius: 10px;
+            transition: width 0.8s ease-in-out;
+            position: relative;
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        
+        .message {
+            margin-top: 30px;
+            font-size: 1.2em;
+            font-style: italic;
+            opacity: 0.9;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .milestone {
+            margin-top: 20px;
+            font-size: 1em;
+            color: #FFE4B5;
+            font-weight: bold;
+        }
+        
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin: 25px 0;
+        }
+        
+        .control-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 1.5em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .current-tasks {
+            font-size: 1.2em;
+            font-weight: bold;
+            min-width: 80px;
+            text-align: center;
+        }
+        
+        @media (max-width: 480px) {
+            .progress-container {
+                padding: 30px 20px;
+            }
+            
+            .project-title {
+                font-size: 1.8em;
+            }
+            
+            .percentage-display {
+                font-size: 3em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-container">
+        <div class="project-title">Launch Course</div>
+        <div class="subtitle">Progress Tracker</div>
+        
+        <div class="percentage-display" id="percentage">0%</div>
+        
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div class="controls">
+            <button class="control-btn" id="decreaseBtn" onclick="changeProgress(-1)">-</button>
+            <div class="current-tasks">
+                <span id="tasksComplete">0</span>/60 tasks
+            </div>
+            <button class="control-btn" id="increaseBtn" onclick="changeProgress(1)">+</button>
+        </div>
+        
+        <div class="stats">
+            <span>Progress: <span id="percentage2">0%</span></span>
+            <span>Remaining: <span id="tasksRemaining">60</span> tasks</span>
+        </div>
+        
+        <div class="milestone" id="milestone"></div>
+        
+        <div class="message" id="message">Ready to begin your course creation journey!</div>
+    </div>
+
+    <script>
+        // Starting progress - you can still change this if needed
+        let currentProgress = 0;
+        const totalTasks = 60;
+        
+        // Function to change progress with + and - buttons
+        function changeProgress(change) {
+            const newProgress = currentProgress + change;
+            
+            // Keep within bounds (0 to 60)
+            if (newProgress >= 0 && newProgress <= totalTasks) {
+                currentProgress = newProgress;
+                updateDisplay();
+            }
+        }
+        
+        // Update all display elements
+        function updateDisplay() {
+            const percentage = Math.round((currentProgress / totalTasks) * 100);
+            const remaining = totalTasks - currentProgress;
+            
+            document.getElementById('percentage').textContent = percentage + '%';
+            document.getElementById('percentage2').textContent = percentage + '%';
+            document.getElementById('progressBar').style.width = percentage + '%';
+            document.getElementById('tasksComplete').textContent = currentProgress;
+            document.getElementById('tasksRemaining').textContent = remaining;
+            
+            // Enable/disable buttons at limits
+            document.getElementById('decreaseBtn').disabled = currentProgress <= 0;
+            document.getElementById('increaseBtn').disabled = currentProgress >= totalTasks;
+            
+            updateMessage(percentage);
+        }
+        
+        // Dynamic messages based on progress
+        function updateMessage(percent) {
+            const messageEl = document.getElementById('message');
+            const milestoneEl = document.getElementById('milestone');
+            
+            if (percent === 0) {
+                messageEl.textContent = "Ready to begin your course creation journey!";
+                milestoneEl.textContent = "";
+            } else if (percent < 10) {
+                messageEl.textContent = "Great start! Every expert was once a beginner.";
+                milestoneEl.textContent = "🚀 Project Initiated";
+            } else if (percent < 25) {
+                messageEl.textContent = "Building momentum! You're on your way.";
+                milestoneEl.textContent = "💡 Foundation Building";
+            } else if (percent < 50) {
+                messageEl.textContent = "Quarter way there! Keep up the excellent work!";
+                milestoneEl.textContent = "⚡ Gaining Traction";
+            } else if (percent < 75) {
+                messageEl.textContent = "Halfway milestone achieved! You're crushing it!";
+                milestoneEl.textContent = "🔥 Major Progress";
+            } else if (percent < 90) {
+                messageEl.textContent = "Almost there! The finish line is in sight!";
+                milestoneEl.textContent = "🎯 Final Sprint";
+            } else if (percent < 100) {
+                messageEl.textContent = "So close! Your course launch is nearly ready!";
+                milestoneEl.textContent = "🏁 Launch Preparation";
+            } else {
+                messageEl.textContent = "🎉 Congratulations! Your course is ready to launch!";
+                milestoneEl.textContent = "✅ Launch Ready";
+            }
+        }
+        
+        // Initialize display
+        updateDisplay();
+    </script>
+</body>
+</html>
